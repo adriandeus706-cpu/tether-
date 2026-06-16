@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Tether Wallet + P2P</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:"Inter",sans-serif;background:#0b0d11;color:#f0f2f5;line-height:1.6;min-height:100vh;}
+        a{text-decoration:none;color:inherit;}
+        .container{max-width:1240px;margin:0 auto;padding:0 24px;}
+        .btn-primary{background:linear-gradient(135deg,#26a17b,#1d8a6a);color:#fff;border:none;padding:14px 36px;border-radius:60px;font-weight:600;font-size:1rem;cursor:pointer;transition:0.3s;display:inline-block;box-shadow:0 8px 24px rgba(38,161,123,0.25);}
+        .btn-primary:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(38,161,123,0.4);}
+        .btn-outline{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,0.2);padding:14px 36px;border-radius:60px;font-weight:600;font-size:1rem;cursor:pointer;transition:0.3s;display:inline-block;}
+        .btn-outline:hover{border-color:#26a17b;background:rgba(38,161,123,0.08);}
+        .btn-small{padding:10px 24px;font-size:0.9rem;}
+        .hidden{display:none !important;}
+        .text-center{text-align:center;}
+        .mt-20{margin-top:20px;}
+        .mb-20{margin-bottom:20px;}
+        
+        /* Header */
+        header{position:fixed;top:0;left:0;width:100%;z-index:1000;padding:16px 0;background:rgba(11,13,17,0.82);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,0.04);}
+        .nav-container{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;}
+        .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.6rem;}
+        .logo-icon{background:linear-gradient(135deg,#26a17b,#1a7359);width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#fff;font-weight:700;}
+        .logo span.green{color:#26a17b;}
+        .nav-links{display:flex;align-items:center;gap:32px;}
+        .nav-links a{font-size:0.95rem;font-weight:500;color:rgba(255,255,255,0.7);transition:0.2s;position:relative;}
+        .nav-links a:hover{color:#fff;}
+        .nav-actions{display:flex;align-items:center;gap:16px;}
+        .menu-toggle{display:none;flex-direction:column;gap:5px;background:none;border:none;padding:4px;cursor:pointer;}
+        .menu-toggle span{width:28px;height:2.5px;background:#fff;border-radius:4px;transition:0.3s;}
+        .menu-toggle.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px);}
+        .menu-toggle.active span:nth-child(2){opacity:0;}
+        .menu-toggle.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px);}
+
+        /* Hero */
+        .hero{padding:140px 0 80px;background:radial-gradient(ellipse at 20% 30%,rgba(38,161,123,0.08) 0%,transparent 60%),radial-gradient(ellipse at 80% 70%,rgba(38,161,123,0.05) 0%,transparent 50%),#0b0d11;}
+        .hero .container{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;}
+        .hero-text h1{font-size:3.8rem;font-weight:800;line-height:1.1;letter-spacing:-1.5px;margin-bottom:20px;}
+        .hero-text h1 .highlight{background:linear-gradient(135deg,#26a17b,#4cd9a8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .hero-text p{font-size:1.2rem;color:rgba(255,255,255,0.65);max-width:480px;margin-bottom:36px;line-height:1.8;}
+        .hero-actions{display:flex;flex-wrap:wrap;gap:16px;}
+        .hero-stats{display:flex;gap:48px;margin-top:50px;padding-top:40px;border-top:1px solid rgba(255,255,255,0.06);}
+        .hero-stats .stat h3{font-size:2rem;font-weight:700;color:#26a17b;}
+        .hero-stats .stat p{font-size:0.85rem;color:rgba(255,255,255,0.5);}
+
+        .hero-card{background:rgba(255,255,255,0.03);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.06);border-radius:32px;padding:40px 36px;max-width:420px;box-shadow:0 30px 80px rgba(0,0,0,0.5);transition:0.4s;}
+        .hero-card:hover{transform:translateY(-8px);border-color:rgba(38,161,123,0.3);}
+        .hero-card .badge{background:rgba(38,161,123,0.15);color:#26a17b;padding:6px 16px;border-radius:40px;font-size:0.8rem;font-weight:600;display:inline-block;margin-bottom:18px;}
+        .hero-card h2{font-size:2.2rem;font-weight:700;margin-bottom:8px;}
+        .hero-card .sub{color:rgba(255,255,255,0.5);margin-bottom:24px;}
+        .value-row{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+        .value-row:last-child{border-bottom:none;}
+        .value-row .label{color:rgba(255,255,255,0.5);}
+        .value-row .value.green{color:#26a17b;font-weight:600;}
+
+        /* Modals */
+        .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);z-index:3000;justify-content:center;align-items:center;}
+        .modal-overlay.active{display:flex;}
+        .modal-box{background:#1a1e26;border-radius:32px;padding:40px;max-width:480px;width:90%;border:1px solid rgba(255,255,255,0.08);box-shadow:0 40px 80px rgba(0,0,0,0.6);position:relative;max-height:90vh;overflow-y:auto;}
+        .modal-box .close-btn{position:absolute;top:16px;right:20px;font-size:1.8rem;background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;transition:0.2s;}
+        .modal-box .close-btn:hover{color:#fff;transform:rotate(90deg);}
+        .modal-box h2{font-size:1.8rem;margin-bottom:8px;}
+        .modal-box p{color:rgba(255,255,255,0.5);margin-bottom:20px;}
+        .modal-box label{display:block;font-weight:500;margin-bottom:6px;color:rgba(255,255,255,0.8);}
+        .modal-box input{width:100%;padding:14px 18px;border-radius:60px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#fff;font-size:1rem;outline:none;margin-bottom:16px;}
+        .modal-box input:focus{border-color:#26a17b;}
+        .modal-box .btn-primary{width:100%;text-align:center;}
+        .wallet-address{background:rgba(38,161,123,0.1);border:1px solid rgba(38,161,123,0.3);border-radius:16px;padding:16px;text-align:center;margin-top:16px;}
+        .wallet-address .addr{font-family:monospace;font-size:1rem;color:#26a17b;word-break:break-all;background:rgba(0,0,0,0.3);padding:10px;border-radius:10px;margin-top:8px;}
+
+        /* Dashboard */
+        .dashboard{background:#0f1217;padding:40px 0;min-height:60vh;}
+        .dashboard-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:24px;padding:36px;max-width:820px;margin:0 auto;}
+        .dashboard-card .greeting{font-size:1.8rem;font-weight:700;margin-bottom:8px;}
+        .dashboard-card .email-label{color:rgba(255,255,255,0.5);margin-bottom:24px;}
+        .section-box{background:rgba(255,255,255,0.02);border-radius:16px;padding:20px;margin:20px 0;}
+        .section-box .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:12px;}
+        .section-box input{flex:1;padding:12px 16px;border-radius:60px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#fff;font-size:1rem;outline:none;min-width:120px;}
+        .section-box input:focus{border-color:#26a17b;}
+        .section-box .result{color:#26a17b;font-weight:600;font-size:1.1rem;}
+        .section-box .btn-primary{width:auto;padding:12px 24px;}
+
+        /* ===== P2P Section ===== */
+        .p2p-tabs{display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:12px;}
+        .p2p-tabs button{background:transparent;border:none;color:rgba(255,255,255,0.5);font-weight:600;font-size:1rem;padding:8px 20px;border-radius:40px;cursor:pointer;transition:0.3s;}
+        .p2p-tabs button.active{background:rgba(38,161,123,0.15);color:#26a17b;}
+        .p2p-tabs button:hover{color:#fff;}
+
+        .p2p-filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;}
+        .p2p-filters select{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:40px;padding:8px 16px;color:#fff;font-size:0.9rem;outline:none;cursor:pointer;}
+        .p2p-filters select option{background:#1a1e26;}
+
+        .p2p-list{display:flex;flex-direction:column;gap:16px;}
+        .p2p-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:16px;padding:16px 20px;transition:0.3s;display:grid;grid-template-columns:1fr 2fr 1fr;gap:16px;align-items:center;}
+        .p2p-card:hover{background:rgba(255,255,255,0.04);border-color:rgba(38,161,123,0.2);}
+        .p2p-card .trader-info{display:flex;flex-direction:column;}
+        .p2p-card .trader-name{font-weight:700;font-size:1.1rem;display:flex;align-items:center;gap:8px;}
+        .p2p-card .trader-name .online{color:#26a17b;font-size:0.7rem;background:rgba(38,161,123,0.15);padding:2px 10px;border-radius:40px;font-weight:500;}
+        .p2p-card .trader-stats{color:rgba(255,255,255,0.4);font-size:0.8rem;margin-top:4px;}
+        .p2p-card .trader-stats span{margin-right:12px;}
+        .p2p-card .offer-details{display:flex;flex-direction:column;gap:4px;}
+        .p2p-card .offer-details .price{font-weight:700;font-size:1.2rem;color:#26a17b;}
+        .p2p-card .offer-details .meta{color:rgba(255,255,255,0.5);font-size:0.8rem;}
+        .p2p-card .offer-details .methods{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+        .p2p-card .offer-details .methods span{background:rgba(255,255,255,0.05);padding:2px 10px;border-radius:40px;font-size:0.7rem;color:rgba(255,255,255,0.6);}
+        .p2p-card .buy-action{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+        .p2p-card .buy-action .btn-buy{background:linear-gradient(135deg,#26a17b,#1d8a6a);color:#fff;border:none;padding:8px 28px;border-radius:60px;font-weight:600;cursor:pointer;transition:0.3s;}
+        .p2p-card .buy-action .btn-buy:hover{transform:scale(1.05);box-shadow:0 8px 24px rgba(38,161,123,0.3);}
+        .p2p-card .buy-action .limit{color:rgba(255,255,255,0.3);font-size:0.7rem;}
+
+        @media(max-width:768px){
+            .p2p-card{grid-template-columns:1fr;gap:10px;text-align:center;}
+            .p2p-card .buy-action{align-items:center;}
+            .p2p-card .offer-details .methods{justify-content:center;}
+        }
+
+        @media(max-width:1024px){
+            .hero .container{grid-template-columns:1fr;text-align:center;}
+            .hero-text p{margin-left:auto;margin-right:auto;}
+            .hero-actions{justify-content:center;}
+            .hero-stats{justify-content:center;}
+            .hero-card{margin:0 auto;}
+        }
+        @media(max-width:820px){
+            .nav-links{display:none;flex-direction:column;width:100%;padding:20px 0;border-top:1px solid rgba(255,255,255,0.05);margin-top:14px;}
+            .nav-links.open{display:flex;}
+            .nav-actions .btn-primary{display:none;}
+            .menu-toggle{display:flex;}
+            .hero-text h1{font-size:2.6rem;}
+            .hero-stats{flex-wrap:wrap;gap:24px;}
+            .dashboard-card{padding:20px;}
+        }
+        @media(max-width:480px){
+            .hero-text h1{font-size:2rem;}
+            .hero-card{padding:28px 20px;}
+            .btn-primary,.btn-outline{padding:12px 24px;width:100%;text-align:center;}
+            .hero-actions{flex-direction:column;align-items:center;}
+            .modal-box{padding:24px;}
+            .section-box .row{flex-direction:column;}
+            .section-box input{width:100%;}
+            .p2p-filters{flex-direction:column;}
+            .p2p-filters select{width:100%;}
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="header">
+    <div class="container nav-container">
+        <a href="#" class="logo"><div class="logo-icon">₮</div><span>Tether<span class="green">.</span></span></a>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="#hero">Home</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#ecosystem">Ecosystem</a></li>
+        </ul>
+        <div class="nav-actions">
+            <a href="#" class="btn-primary btn-small" id="navSignupBtn">Sign Up</a>
+            <a href="#" class="btn-outline btn-small" id="navLoginBtn">Login</a>
+            <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+        </div>
+    </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+    <div class="container">
+        <div class="hero-text">
+            <span style="color:#26a17b;font-weight:600;letter-spacing:2px;text-transform:uppercase;font-size:0.8rem;">₮ The Stablecoin Standard</span>
+            <h1>Trust in <br><span class="highlight">Every Transaction</span></h1>
+            <p>Tether is the most widely used stablecoin — built on blockchain transparency, backed by reserves, and designed for the future of finance.</p>
+            <div class="hero-actions">
+                <a href="#" class="btn-primary" id="heroSignupBtn">Get Started</a>
+                <a href="#features" class="btn-outline">Learn More <i class="fas fa-arrow-right" style="margin-left:8px;"></i></a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat"><h3>$118B+</h3><p>Market Cap</p></div>
+                <div class="stat"><h3>350M+</h3><p>Active Wallets</p></div>
+                <div class="stat"><h3>100+</h3><p>Blockchains</p></div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="hero-card">
+                <div class="badge"><i class="fas fa-circle" style="font-size:0.5rem;color:#26a17b;margin-right:6px;"></i> Live Price</div>
+                <h2>USDT</h2>
+                <div class="sub">Tether USD</div>
+                <div class="value-row"><span class="label">Price</span><span class="value green">$0.95</span></div>
+                <div class="value-row"><span class="label">Market Cap</span><span class="value">$118.4B</span></div>
+                <div class="value-row"><span class="label">Circulating Supply</span><span class="value">118.2B USDT</span></div>
+                <div class="value-row"><span class="label">Reserve Ratio</span><span class="value green">102.3%</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" style="padding:80px 0;background:#0f1217;border-top:1px solid rgba(255,255,255,0.03);">
+    <div class="container text-center">
+        <span style="color:#26a17b;font-weight:600;letter-spacing:2px;text-transform:uppercase;font-size:0.8rem;">Why Tether</span>
+        <h2 style="font-size:2.8rem;font-weight:700;margin:12px 0;">Built for <span style="color:#26a17b;">Trust</span> &amp; Utility</h2>
+        <p style="color:rgba(255,255,255,0.55);max-width:560px;margin:0 auto 40px;line-height:1.7;">Tether combines the stability of fiat with the innovation of blockchain — creating a reliable bridge between traditional and digital finance.</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px;">
+            <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:24px;padding:32px;"><div style="font-size:2rem;color:#26a17b;margin-bottom:16px;"><i class="fas fa-shield-alt"></i></div><h3>Transparent Reserves</h3><p style="color:rgba(255,255,255,0.6);">Our reserves are audited regularly and published to ensure full transparency.</p></div>
+            <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:24px;padding:32px;"><div style="font-size:2rem;color:#26a17b;margin-bottom:16px;"><i class="fas fa-globe"></i></div><h3>Global Accessibility</h3><p style="color:rgba(255,255,255,0.6);">Available on over 100 blockchains, accessible to anyone, anywhere.</p></div>
+            <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:24px;padding:32px;"><div style="font-size:2rem;color:#26a17b;margin-bottom:16px;"><i class="fas fa-bolt"></i></div><h3>Fast &amp; Low Cost</h3><p style="color:rgba(255,255,255,0.6);">Send value instantly with minimal fees across multiple networks.</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- ECOSYSTEM -->
+<section id="ecosystem" style="padding:80px 0;background:#0b0d11;">
+    <div class="container text-center">
+        <span style="color:#26a17b;font-weight:600;letter-spacing:2px;text-transform:uppercase;font-size:0.8rem;">Ecosystem</span>
+        <h2 style="font-size:2.8rem;font-weight:700;margin:12px 0;">The <span style="color:#26a17b;">Largest</span> Stablecoin Network</h2>
+        <p style="color:rgba(255,255,255,0.55);max-width:560px;margin:0 auto 40px;">Tether powers the global digital economy — from payments to DeFi, used by millions every day.</p>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px;">
+            <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:20px;padding:28px 16px;"><div style="font-size:2.4rem;font-weight:700;color:#26a17b;">118B+</div><p style="color:rgba(255,255,255,0.5);">USDT in circulation</p></div>
+            <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:20px;padding:28px 16px;"><div style="font-size:2.4rem;font-weight:700;color:#26a17b;">350M+</div><p style="color:rgba(255,255,255,0.5);">Active wallets</p></div>
+            <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:20px;padding:28px 16px;"><div style="font-size:2.4rem;font-weight:700;color:#26a17b;">100+</div><p style="color:rgba(255,255,255,0.5);">Blockchains</p></div>
+            <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:20px;padding:28px 16px;"><div style="font-size:2.4rem;font-weight:700;color:#26a17b;">$40T+</div><p style="color:rgba(255,255,255,0.5);">Transaction volume (2025)</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal">
+    <div class="modal-box">
+        <button class="close-btn" id="closeAuthModal">&times;</button>
+        <div id="authFormContainer">
+            <div id="signupForm">
+                <h2>Sign Up</h2>
+                <p>Create your account to get started.</p>
+                <label>Full Name</label>
+                <input type="text" id="signupName" placeholder="e.g. John Doe" />
+                <label>Email</label>
+                <input type="email" id="signupEmail" placeholder="you@example.com" />
+                <label>Password</label>
+                <input type="password" id="signupPassword" placeholder="At least 6 characters" />
+                <button class="btn-primary" id="signupBtn">Sign Up</button>
+                <p style="margin-top:16px;font-size:0.9rem;color:rgba(255,255,255,0.4);">Already have an account? <a href="#" id="switchToLogin" style="color:#26a17b;font-weight:600;">Login here</a></p>
+            </div>
+            <div id="loginForm" class="hidden">
+                <h2>Login</h2>
+                <p>Enter your email and password.</p>
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="you@example.com" />
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="Your password" />
+                <button class="btn-primary" id="loginBtn">Login</button>
+                <p style="margin-top:16px;font-size:0.9rem;color:rgba(255,255,255,0.4);">Don't have an account? <a href="#" id="switchToSignup" style="color:#26a17b;font-weight:600;">Sign up here</a></p>
+            </div>
+            <div id="verifyForm" class="hidden">
+                <h2>Verify Your Account</h2>
+                <p>We've sent a verification code to your email. Enter it below.</p>
+                <label>Verification Code</label>
+                <input type="text" id="verifyCode" placeholder="e.g. 123456" />
+                <button class="btn-primary" id="verifyBtn">Verify</button>
+                <p style="margin-top:12px;font-size:0.8rem;color:rgba(255,255,255,0.3);">Your code: <span id="displayCode" style="color:#26a17b;font-weight:700;"></span></p>
+                <p style="font-size:0.8rem;color:rgba(255,255,255,0.3);">(For demo, code is shown above — copy and paste it)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== DASHBOARD ========== -->
+<section id="dashboardSection" class="dashboard hidden">
+    <div class="container">
+        <div class="dashboard-card">
+            <div class="greeting">👋 Welcome, <span id="dashName">Guest</span></div>
+            <div class="email-label"><i class="fas fa-envelope"></i> <span id="dashEmail">-</span></div>
+
+            <!-- Convert: USD → USDT -->
+            <div class="section-box">
+                <h3 style="margin-bottom:12px;">🔄 Convert USD to USDT</h3>
+                <div class="row">
+                    <input type="number" id="convertAmount" placeholder="Amount (USD)" value="1" />
+                    <span style="font-weight:600;color:#26a17b;font-size:1.2rem;">→</span>
+                    <span class="result" id="convertResult">1.05 USDT</span>
+                </div>
+                <p style="font-size:0.8rem;color:rgba(255,255,255,0.3);">Rate: 1 USD = 1.05 USDT</p>
+            </div>
+
+            <!-- ===== P2P SECTION ===== -->
+            <div class="section-box">
+                <h3 style="margin-bottom:8px;">📊 P2P Marketplace</h3>
+                <div class="p2p-tabs">
+                    <button class="active" id="p2pBuyTab">Buy</button>
+                    <button id="p2pSellTab">Sell</button>
+                </div>
+                <div class="p2p-filters">
+                    <select><option>USD ▼</option><option>EUR</option><option>GBP</option></select>
+                    <select><option>USDT ▼</option><option>BTC</option><option>ETH</option></select>
+                    <select><option>All Payment Methods</option><option>ABA Bank</option><option>Wing</option><option>ACLEDA</option></select>
+                </div>
+
+                <div class="p2p-list" id="p2pList">
+                    <!-- Cards will be rendered by JS -->
+                </div>
+            </div>
+
+            <!-- Deposit -->
+            <div class="section-box">
+                <h3 style="margin-bottom:12px;">💰 Deposit</h3>
+                <button class="btn-primary" id="generateWalletBtn" style="width:100%;margin-bottom:12px;">🔑 Generate Wallet Address</button>
+                <div id="walletDisplay" class="wallet-address hidden">
+                    <p style="color:rgba(255,255,255,0.6);font-size:0.9rem;">Your Wallet Address:</p>
+                    <div class="addr">TZ2CtXauTyuTUVniCtyQn1dB9x1uz1qo9e</div>
+                </div>
+                <div class="row" style="margin-top:12px;">
+                    <input type="number" id="depositAmount" placeholder="Amount (USDT)" value="10" />
+                    <button class="btn-primary" id="depositBtn">Deposit</button>
+                </div>
+                <p id="depositFeedback" style="color:#26a17b;font-size:0.9rem;margin-top:8px;"></p>
+            </div>
+
+            <!-- Withdraw -->
+            <div class="section-box">
+                <h3 style="margin-bottom:12px;">🏦 Withdraw</h3>
+                <div class="row">
+                    <input type="number" id="withdrawAmount" placeholder="Amount (USDT)" value="5" />
+                    <input type="text" id="withdrawAddress" placeholder="Wallet Address" />
+                </div>
+                <button class="btn-primary" id="withdrawBtn" style="width:100%;">Withdraw</button>
+                <p id="withdrawFeedback" style="color:#26a17b;font-size:0.9rem;margin-top:8px;"></p>
+            </div>
+
+            <button class="btn-outline" id="logoutBtn" style="width:100%;margin-top:24px;">Logout</button>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="background:#07090c;padding:40px 0;border-top:1px solid rgba(255,255,255,0.04);margin-top:40px;">
+    <div class="container text-center" style="color:rgba(255,255,255,0.25);font-size:0.85rem;">
+        &copy; 2026 Tether Holdings Limited. All rights reserved.
+    </div>
+</footer>
+
+<!-- ========== JAVASCRIPT ========== -->
+<script>
+    (function() {
+        // ----- AUTH LOGIC (same as before) -----
+        const authModal = document.getElementById('authModal');
+        const closeAuthModal = document.getElementById('closeAuthModal');
+        const signupForm = document.getElementById('signupForm');
+        const loginForm = document.getElementById('loginForm');
+        const verifyForm = document.getElementById('verifyForm');
+        const switchToLogin = document.getElementById('switchToLogin');
+        const switchToSignup = document.getElementById('switchToSignup');
+        const signupBtn = document.getElementById('signupBtn');
+        const loginBtn = document.getElementById('loginBtn');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const displayCode = document.getElementById('displayCode');
+        const navSignupBtn = document.getElementById('navSignupBtn');
+        const navLoginBtn = document.getElementById('navLoginBtn');
+        const heroSignupBtn = document.getElementById('heroSignupBtn');
+        const dashSection = document.getElementById('dashboardSection');
+        const dashName = document.getElementById('dashName');
+        const dashEmail = document.getElementById('dashEmail');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const generateWalletBtn = document.getElementById('generateWalletBtn');
+        const walletDisplay = document.getElementById('walletDisplay');
+        const depositAmount = document.getElementById('depositAmount');
+        const depositBtn = document.getElementById('depositBtn');
+        const depositFeedback = document.getElementById('depositFeedback');
+        const withdrawAmount = document.getElementById('withdrawAmount');
+        const withdrawAddress = document.getElementById('withdrawAddress');
+        const withdrawBtn = document.getElementById('withdrawBtn');
+        const withdrawFeedback = document.getElementById('withdrawFeedback');
+        const convertAmount = document.getElementById('convertAmount');
+        const convertResult = document.getElementById('convertResult');
+
+        let currentUser = null;
+        let verificationCode = '';
+        let pendingSignupData = null;
+
+        function showModal() { authModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() { authModal.classList.remove('active'); document.body.style.overflow = ''; }
+        function showSignup() { signupForm.classList.remove('hidden'); loginForm.classList.add('hidden'); verifyForm.classList.add('hidden'); }
+        function showLogin() { loginForm.classList.remove('hidden'); signupForm.classList.add('hidden'); verifyForm.classList.add('hidden'); }
+        function showVerify() { verifyForm.classList.remove('hidden'); signupForm.classList.add('hidden'); loginForm.classList.add('hidden'); }
+
+        function loadUser() {
+            const saved = localStorage.getItem('tether_user');
+            if (saved) {
+                try {
+                    const u = JSON.parse(saved);
+                    if (u.verified) {
+                        currentUser = u;
+                        showDashboard();
+                        return true;
+                    } else {
+                        localStorage.removeItem('tether_user');
+                        currentUser = null;
+                        return false;
+                    }
+                } catch(e) { currentUser = null; return false; }
+            }
+            return false;
+        }
+
+        function saveUser(user) {
+            localStorage.setItem('tether_user', JSON.stringify(user));
+            currentUser = user;
+        }
+
+        function showDashboard() {
+            dashSection.classList.remove('hidden');
+            document.querySelector('.hero').style.display = 'none';
+            document.querySelector('#features').style.display = 'none';
+            document.querySelector('#ecosystem').style.display = 'none';
+            document.querySelector('footer').style.display = 'none';
+            document.getElementById('navSignupBtn').style.display = 'none';
+            document.getElementById('navLoginBtn').style.display = 'none';
+            if (currentUser) {
+                dashName.textContent = currentUser.name || 'Guest';
+                dashEmail.textContent = currentUser.email || '-';
+                if (currentUser.walletGenerated) {
+                    walletDisplay.classList.remove('hidden');
+                } else {
+                    walletDisplay.classList.add('hidden');
+                }
+                updateConvert();
+                renderP2P(); // render P2P list
+            }
+        }
+
+        function hideDashboard() {
+            dashSection.classList.add('hidden');
+            document.querySelector('.hero').style.display = 'block';
+            document.querySelector('#features').style.display = 'block';
+            document.querySelector('#ecosystem').style.display = 'block';
+            document.querySelector('footer').style.display = 'block';
+            document.getElementById('navSignupBtn').style.display = 'inline-block';
+            document.getElementById('navLoginBtn').style.display = 'inline-block';
+            localStorage.removeItem('tether_user');
+            currentUser = null;
+        }
+
+        function updateConvert() {
+            const usd = parseFloat(convertAmount.value) || 0;
+            const usdt = usd * 1.05;
+            convertResult.textContent = usdt.toFixed(2) + ' USDT';
+        }
+
+        // ----- P2P DATA -----
+        const p2pData = [
+            {
+                name: 'kaka14',
+                transactions: '8,590',
+                completion: '99.8%',
+                rating: '99.53%',
+                price: '1.001',
+                available: '1,166.49 USDT',
+                limit: '100 - 1,167.65 USD',
+                methods: ['ABA Bank', 'Wing Money', 'Wing Bank (Cambodia)']
+            },
+            {
+                name: 'BEER_789',
+                transactions: '2,742',
+                completion: '99.74%',
+                rating: '100.00%',
+                price: '1.001',
+                available: '518.94 USDT',
+                limit: '10 - 519.46 USD',
+                methods: ['ABA Bank', 'ACLEDA']
+            },
+            {
+                name: 'Jianjian',
+                transactions: '4,683',
+                completion: '97.92%',
+                rating: '98.39%',
+                price: '1.001',
+                available: '900 USDT',
+                limit: '35 - 900.9 USD',
+                methods: ['ABA Bank', 'KHQR']
+            },
+            {
+                name: 'Vicky_Trader',
+                transactions: '9,800',
+                completion: '96.91%',
+                rating: '98.43%',
+                price: '1.000',
+                available: '313 USDT',
+                limit: '313 - 313 USD',
+                methods: ['Payoneer']
+            }
+        ];
+
+        function renderP2P() {
+            const list = document.getElementById('p2pList');
+            list.innerHTML = '';
+            p2pData.forEach(trader => {
+                const card = document.createElement('div');
+                card.className = 'p2p-card';
+                card.innerHTML = `
+                    <div class="trader-info">
+                        <div class="trader-name">
+                            ${trader.name}
+                            <span class="online"><i class="fas fa-circle" style="font-size:0.4rem;color:#26a17b;margin-right:4px;"></i> Online</span>
+                        </div>
+                        <div class="trader-stats">
+                            <span>📊 ${trader.transactions} transactions</span>
+                            <span>✅ ${trader.completion} completion</span>
+                            <span>⭐ ${trader.rating}</span>
+                        </div>
+                    </div>
+                    <div class="offer-details">
+                        <div class="price">$${trader.price}</div>
+                        <div class="meta">Available ${trader.available}</div>
+                        <div class="meta">Limit ${trader.limit}</div>
+                        <div class="methods">
+                            ${trader.methods.map(m => `<span>${m}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="buy-action">
+                        <button class="btn-buy" data-trader="${trader.name}">Buy</button>
+                        <div class="limit">Limit ${trader.limit}</div>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+
+            // Add buy button listeners
+            document.querySelectorAll('.btn-buy').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const trader = this.getAttribute('data-trader');
+                    alert(`🛒 You clicked "Buy" from ${trader}.\nIn a real app, this would open an order form.`);
+                });
+            });
+        }
+
+        // ----- P2P TABS (Buy/Sell) -----
+        document.getElementById('p2pBuyTab').addEventListener('click', function() {
+            this.classList.add('active');
+            document.getElementById('p2pSellTab').classList.remove('active');
+            // For demo, just re-render same data
+            renderP2P();
+        });
+        document.getElementById('p2pSellTab').addEventListener('click', function() {
+            this.classList.add('active');
+            document.getElementById('p2pBuyTab').classList.remove('active');
+            // For demo, show a message (or different data)
+            const list = document.getElementById('p2pList');
+            list.innerHTML = `<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.4);">📤 Sell orders coming soon — switch to Buy to see offers.</div>`;
+        });
+
+        // ----- AUTH EVENTS (same as before) -----
+        switchToLogin.addEventListener('click', e => { e.preventDefault(); showLogin(); });
+        switchToSignup.addEventListener('click', e => { e.preventDefault(); showSignup(); });
+
+        signupBtn.addEventListener('click', function() {
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value.trim();
+            if (!name || !email || !password) { alert('Please fill all fields.'); return; }
+            if (!email.includes('@')) { alert('Please enter a valid email.'); return; }
+            if (password.length < 4) { alert('Password must be at least 4 characters.'); return; }
+            const existing = localStorage.getItem('tether_user');
+            if (existing) {
+                try {
+                    const ex = JSON.parse(existing);
+                    if (ex.email === email) { alert('Email already registered. Please login.'); return; }
+                } catch(e) {}
+            }
+            verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+            displayCode.textContent = verificationCode;
+            pendingSignupData = { name, email, password, verified: false, walletGenerated: false };
+            showVerify();
+            alert('Verification code sent to your email.\nCode: ' + verificationCode + '\n(Copy and paste it to verify)');
+        });
+
+        verifyBtn.addEventListener('click', function() {
+            const code = document.getElementById('verifyCode').value.trim();
+            if (!code) { alert('Please enter the verification code.'); return; }
+            if (code !== verificationCode) { alert('Invalid code. Try again.'); return; }
+            if (pendingSignupData) {
+                pendingSignupData.verified = true;
+                saveUser(pendingSignupData);
+                pendingSignupData = null;
+                hideModal();
+                showDashboard();
+                alert('✅ Account verified! Welcome to your dashboard.');
+            } else {
+                alert('Error. Please sign up again.');
+            }
+        });
+
+        loginBtn.addEventListener('click', function() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            if (!email || !password) { alert('Please fill in email and password.'); return; }
+            const saved = localStorage.getItem('tether_user');
+            if (!saved) { alert('No account found. Please sign up first.'); return; }
+            try {
+                const user = JSON.parse(saved);
+                if (user.email === email && user.password === password && user.verified) {
+                    currentUser = user;
+                    hideModal();
+                    showDashboard();
+                } else if (user.email === email && user.password === password && !user.verified) {
+                    alert('Account not verified. Please sign up again.');
+                    localStorage.removeItem('tether_user');
+                } else {
+                    alert('Email or password is incorrect.');
+                }
+            } catch(e) { alert('Error. Please try again.'); }
+        });
+
+        generateWalletBtn.addEventListener('click', function() {
+            if (!currentUser) return;
+            currentUser.walletGenerated = true;
+            saveUser(currentUser);
+            walletDisplay.classList.remove('hidden');
+            alert('✅ Wallet address generated: TZ2CtXauTyuTUVniCtyQn1dB9x1uz1qo9e');
+        });
+
+        depositBtn.addEventListener('click', function() {
+            const amount = parseFloat(depositAmount.value);
+            if (!amount || amount <= 0) { alert('Please enter a valid amount.'); return; }
+            if (!currentUser || !currentUser.walletGenerated) {
+                alert('Please generate a wallet address first.');
+                return;
+            }
+            depositFeedback.textContent = `✅ Deposit of ${amount} USDT successful! Address: TZ2CtXauTyuTUVniCtyQn1dB9x1uz1qo9e`;
+            depositFeedback.style.color = '#26a17b';
+        });
+
+        withdrawBtn.addEventListener('click', function() {
+            const amount = parseFloat(withdrawAmount.value);
+            const address = withdrawAddress.value.trim();
+            if (!amount || amount <= 0) { alert('Please enter a valid amount.'); return; }
+            if (!address) { alert('Please enter a wallet address.'); return; }
+            withdrawFeedback.textContent = `✅ Withdrawal of ${amount} USDT sent to ${address}`;
+            withdrawFeedback.style.color = '#26a17b';
+        });
+
+        logoutBtn.addEventListener('click', function() {
+            hideDashboard();
+            alert('Logged out successfully.');
+        });
+
+        convertAmount.addEventListener('input', updateConvert);
+
+        function openSignupModal() { showModal(); showSignup(); }
+        function openLoginModal() { showModal(); showLogin(); }
+        navSignupBtn.addEventListener('click', e => { e.preventDefault(); openSignupModal(); });
+        navLoginBtn.addEventListener('click', e => { e.preventDefault(); openLoginModal(); });
+        heroSignupBtn.addEventListener('click', e => { e.preventDefault(); openSignupModal(); });
+
+        closeAuthModal.addEventListener('click', hideModal);
+        authModal.addEventListener('click', function(e) { if (e.target === this) hideModal(); });
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && authModal.classList.contains('active')) hideModal(); });
+
+        // Mobile menu
+        const toggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        toggle.addEventListener('click', function() {
+            this.classList.toggle('active');
+            navLinks.classList.toggle('open');
+        });
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function() {
+                toggle.classList.remove('active');
+                navLinks.classList.remove('open');
+            });
+        });
+
+        // Init
+        const loggedIn = loadUser();
+        if (!loggedIn) {
+            dashSection.classList.add('hidden');
+            document.querySelector('.hero').style.display = 'block';
+            document.querySelector('#features').style.display = 'block';
+            document.querySelector('#ecosystem').style.display = 'block';
+            document.querySelector('footer').style.display = 'block';
+        }
+
+        console.log('✅ Tether Wallet + P2P loaded.');
+    })();
+</script>
+</body>
+</html>
